@@ -114,9 +114,15 @@ function openCreate() {
 
 function runAction(action: string, row: EntryRow) {
   errorMessage.value = ''
-  const result = applyAction(meta.key, Number(row.id), action)
+  // 传入当前渲染行的版本号：并发更新时只认首份，后到的确认会被拒绝并要求刷新。
+  const expectedVersion = typeof row.__v === 'number' ? row.__v : 0
+  const result = applyAction(meta.key, Number(row.id), action, expectedVersion)
   if (!result.ok) {
     errorMessage.value = result.message
+    // 版本冲突时以落库的首份为准，刷新列表，避免已超时记录被旧画面切回监测中。
+    if (typeof result.currentVersion === 'number') {
+      reload()
+    }
     return
   }
   reload()

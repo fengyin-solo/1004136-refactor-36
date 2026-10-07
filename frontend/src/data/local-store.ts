@@ -41,7 +41,16 @@ export function listRows(key: string): EntryRow[] {
 }
 
 export function saveRows(key: string, rows: EntryRow[]): void {
-  const next = { ...allRows(), [key]: rows }
+  commit({ [key]: rows })
+}
+
+/**
+ * 多模块原子提交：基于同一份快照算出全部新数组后一次性落库。
+ * 任一参数准备失败都不应调用本函数；调用时只整体替换 cache 与 storage，
+ * 不会出现只写了一半、覆盖掉原记录的中间态。
+ */
+export function commit(patch: Record<string, EntryRow[]>): void {
+  const next = { ...allRows(), ...patch }
   cache = next
   if (typeof window !== 'undefined' && window.localStorage) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))

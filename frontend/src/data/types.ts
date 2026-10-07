@@ -5,7 +5,12 @@ export type EntryRow = {
   status: string
   pending: boolean
   abnormal: boolean
-  [field: string]: string | number | boolean
+  // 乐观锁版本号：历史旧数据没有这个字段，读取时按首份（0）处理。
+  __v?: number
+  // 过站监测的内部时间戳：仅新口径记录写入，历史旧数据保持原样。
+  __monitoredAt?: string
+  __completedAt?: string
+  [field: string]: string | number | boolean | undefined
 }
 
 export type ModuleMeta = {
@@ -30,6 +35,8 @@ export type PageResult = {
 export type ActionResult = {
   ok: boolean
   message: string
+  // 并发首份（乐观锁）判定时回传当前版本，供页面刷新后重试。
+  currentVersion?: number
 }
 
 export type OverviewResult = {
