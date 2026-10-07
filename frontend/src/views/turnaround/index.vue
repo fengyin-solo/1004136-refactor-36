@@ -85,8 +85,6 @@ const meta = moduleMeta('turnaround')
 const columns = ["过站编号", "关联航班", "计划到港", "实际到港", "过站时长", "保障进度", "异常事项", "过站状态"]
 const actions = ["开始监测", "正常完成", "标记超时"]
 const statuses = ["待监测", "监测中", "正常完成", "已超时"]
-const stats = [{"label": "监测中航班", "value": 0}, {"label": "正常完成航班", "value": 0}, {"label": "超时航班", "value": 0}]
-
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
 const errorMessage = ref('')
@@ -96,6 +94,16 @@ const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
     count: rows.value.filter((row) => String(row.status) === status).length,
+  })),
+)
+const stats = computed(() =>
+  ["监测中航班", "正常完成航班", "超时航班"].map((label) => ({
+    label,
+    value: rows.value.filter((row) => {
+      if (label === "监测中航班") return String(row.status) === "监测中"
+      if (label === "正常完成航班") return String(row.status) === "正常完成"
+      return String(row.status) === "已超时"
+    }).length,
   })),
 )
 

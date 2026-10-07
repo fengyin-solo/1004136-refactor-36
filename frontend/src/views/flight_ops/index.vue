@@ -85,7 +85,6 @@ const meta = moduleMeta('flight_ops')
 const columns = ["航班号", "机尾号", "计划到港", "实际到港", "计划离港", "预计离港", "保障节点", "保障状态"]
 const actions = ["启动保障", "确认就绪", "标记延误"]
 const statuses = ["待保障", "保障中", "已就绪", "已延误"]
-const stats = [{"label": "待保障航班", "value": 0}, {"label": "保障中航班", "value": 0}, {"label": "延误航班", "value": 0}]
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
@@ -96,6 +95,16 @@ const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
     count: rows.value.filter((row) => String(row.status) === status).length,
+  })),
+)
+const stats = computed(() =>
+  ["待保障航班", "保障中航班", "延误航班"].map((label) => ({
+    label,
+    value: rows.value.filter((row) => {
+      if (label === "待保障航班") return String(row.status) === "待保障"
+      if (label === "保障中航班") return String(row.status) === "保障中"
+      return String(row.status) === "已延误"
+    }).length,
   })),
 )
 
